@@ -5,12 +5,15 @@
   "main": "index.js",
   "private": true,
   "workspaces": [
-  "packages/*"
+    "packages/*"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "yarn": "^1.22.10"
+  }
 }

@@ -1,37 +1,9 @@
 import React, { useContext } from "react";
 import { Router } from "@reach/router";
-import { Flex, Heading, Button, NavLink, Container } from "theme-ui";
-import { IdentityContext } from "../../netlifyIdentityContext";
-import { Link } from "gatsby";
+import { Flex, Heading, Button } from "theme-ui";
 
-let Dash = () => {
-  const { user, identity: netlifyIdentity } = useContext(IdentityContext);
-  return (
-    <Container>
-      <Flex as="nav">
-        <NavLink as={Link} to="/" p={2}>
-          Home
-        </NavLink>
-        <NavLink as={Link} to="/app" p={2}>
-          Dashboard
-        </NavLink>
-        {user && (
-          <NavLink
-            href="#!"
-            p={2}
-            onClick={() => {
-              netlifyIdentity.logout();
-            }}
-          >
-            {" "}
-            Logout {user.user_metadata.full_name}
-          </NavLink>
-        )}
-      </Flex>
-      <span>Dash hasUser: {user && user.user_metadata.full_name}</span>
-    </Container>
-  );
-};
+import { IdentityContext } from "../../netlifyIdentityContext";
+import Dashboard from "../components/dashboard";
 
 let DashLoggedOut = () => {
   const { identity: netlifyIdentity } = useContext(IdentityContext);
@@ -58,7 +30,7 @@ const App = () => {
   }
   return (
     <Router>
-      <Dash path="/app" />
+      <Dashboard path="/app" />
     </Router>
   );
 };

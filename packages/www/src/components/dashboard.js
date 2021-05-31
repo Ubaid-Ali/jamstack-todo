@@ -1,4 +1,4 @@
-import React, { useContext, useReducer, useRef } from "react";
+import React, { useContext, useRef } from "react";
 import {
   Container,
   Flex,
@@ -10,38 +10,69 @@ import {
 } from "theme-ui";
 import { Link } from "@reach/router";
 import { IdentityContext } from "../../netlifyIdentityContext";
+import { gql, useMutation, useQuery } from "@apollo/client";
 
-const initialTodos = [{ done: false, value: "1st Todo" }];
-
-const todosReducer = (state = initialTodos, action) => {
-  switch (action.type) {
-    case "addTodo":
-      return [{ done: false, value: action.payload }, ...state];
-
-    case "toggleTodoDone":
-      const newState = [...state];
-      newState[action.payload] = {
-        done: !state[action.payload].done,
-        value: state[action.payload].value,
-      };
-      console.log(`newState[action.payload]`, newState[action.payload]);
-      return newState;
-
-    default:
-      return state;
+const ADD_TODO = gql`
+  mutation AddTodo($text: String!) {
+    addTodo(text: $text) {
+      id
+    }
   }
-};
+`;
 
-// DASHBOARD COMPONENT
+const GET_TODOS = gql`
+  query GetTodos {
+    todos {
+      id
+      text
+      done
+    }
+  }
+`;
+
+const UPDATE_TODO_DONE = gql`
+  mutation UpdateTodoDone($id: ID!) {
+    updateTodoDone(id: $id) {
+      text
+      done
+    }
+  }
+`;
+
+// R E D U C E R
+// const todosReducer = (state, action) => {
+//   switch (action.type) {
+//     case "addTodo":
+//       return [{ done: false, value: action.payload }, ...state];
+
+//     case "toggleTodoDone":
+//       const newState = [...state];
+//       newState[action.payload] = {
+//         done: !state[action.payload].done,
+//         value: state[action.payload].value,
+//       };
+//       console.log(`newState[action.payload]`, newState[action.payload]);
+//       return newState;
+
+//     default:
+//       return state;
+//   }
+// };
+
+// D A S H B O A R D
 const Dashboard = () => {
-  const [todos, dispatch] = useReducer(todosReducer, []);
-
-  // Netlify Auth
+  // const [todos, dispatch] = useReducer(todosReducer, []);
+  // N e t l i f y   A u t h
   const { user, identity: netlifyIdentity } = useContext(IdentityContext);
 
+  const { loading, error, data, refetch } = useQuery(GET_TODOS);
+  const [addTodo] = useMutation(ADD_TODO);
+  const [updateTodoDone] = useMutation(UPDATE_TODO_DONE);
+  
   const inputRef = useRef();
 
-  console.log(`todos: `, todos);
+  
+  // R E T U R N
   return (
     <Container>
       <Flex as="nav">
@@ -64,19 +95,18 @@ const Dashboard = () => {
           </NavLink>
         )}
       </Flex>
-      {/* FORM */}
+
+      {/* F O R M */}
       <Flex
         as="form"
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
-          dispatch({
-            type: "addTodo",
-            payload: inputRef.current.value,
-          });
+          await addTodo({ variables: { text: inputRef.current.value } });
           inputRef.current.value = "";
+          await refetch();
         }}
       >
-        <Flex>
+        <Flex sx={{ display: "flex", minWidth: "50%", marginTop: "2%" }}>
           <Label sx={{ display: "flex" }}>
             <span>Add&nbsp;Todo</span>
             <Input ref={inputRef} sx={{ marginLeft: 1 }} />
@@ -84,21 +114,28 @@ const Dashboard = () => {
           <Button sx={{ marginLeft: 1 }}>Submit</Button>
         </Flex>
       </Flex>
+
+      {/* T O D O   L I S T */}
       <Flex sx={{ flexDirection: "column" }}>
-        <ul sx={{ listStyleType: "none" }}>
-          {todos.map((todo, i) => (
-            <Flex
-              as="li"
-              key={i}
-              onClick={() => {
-                dispatch({ type: "toggleTodoDone", payload: i });
-              }}
-            >
-              <Checkbox checked={todo.done} readOnly />
-              <span>{todo.value}</span>
-            </Flex>
-          ))}
-        </ul>
+        {loading ? <div>Loading...</div> : null} {/* Loading */}
+        {error ? <div>{error.message}</div> : null} {/* Error */}
+        {!loading && !error ? (
+          <ul sx={{ listStyleType: "none" }}>
+            {data.todos.map((todo) => (
+              <Flex
+                as="li"
+                key={todo.id}
+                onClick={async () => {
+                  await updateTodoDone({ variables: { id: todo.id } });
+                  await refetch();
+                }}
+              >
+                <Checkbox checked={todo.done} readOnly />
+                <span>{todo.text}</span>
+              </Flex>
+            ))}
+          </ul>
+        ) : null}
       </Flex>
     </Container>
   );

@@ -44,18 +44,13 @@ const UPDATE_TODO_DONE = gql`
 //   switch (action.type) {
 //     case "addTodo":
 //       return [{ done: false, value: action.payload }, ...state];
-
 //     case "toggleTodoDone":
 //       const newState = [...state];
 //       newState[action.payload] = {
 //         done: !state[action.payload].done,
 //         value: state[action.payload].value,
 //       };
-//       console.log(`newState[action.payload]`, newState[action.payload]);
 //       return newState;
-
-//     default:
-//       return state;
 //   }
 // };
 
@@ -68,7 +63,9 @@ const Dashboard = () => {
   const { loading, error, data, refetch } = useQuery(GET_TODOS);
   const [addTodo] = useMutation(ADD_TODO);
   const [updateTodoDone] = useMutation(UPDATE_TODO_DONE);
-  
+
+  console.log("data: ", data);
+
   const inputRef = useRef();
 
   // R E T U R N

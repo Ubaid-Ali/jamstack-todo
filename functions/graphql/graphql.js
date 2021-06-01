@@ -1,5 +1,4 @@
 const { ApolloServer, gql } = require("apollo-server-lambda");
-const { disableExperimentalFragmentVariables } = require("graphql-tag");
 
 // Construct a schema, using GraphQL schema language
 const typeDefs = gql`
@@ -27,8 +26,10 @@ const resolvers = {
   Query: {
     todos: (parent, args, { user }) => {
       if (!user) {
+        console.log(`user is not available: return empty array `, user);
         return [];
       } else {
+        console.log(`user is available: return todos `, user);
         return Object.values(todos);
       }
     },
@@ -52,8 +53,13 @@ const server = new ApolloServer({
   resolvers,
   context: ({ context }) => {
     if (context.clientContext.user) {
+      console.log(
+        "context.clientContext.user: 'Founded' ",
+        context.clientContext.user
+      );
       return { user: context.clientContext.user.sub };
     } else {
+      console.log("context.clientContext.user: 'Not Found': \ context is: ", context );
       return {};
     }
   },

@@ -21,21 +21,21 @@ const authLink = setContext((_, { headers }) => {
   return {
     headers: {
       ...headers,
-      Authorization: token ? `Bearer ${token}` : ""
-    }
+      Authorization: token ? `Bearer ${token}` : "",
+    },
   };
 });
 
 const httpLink = new HttpLink({
-  uri:
-    "https://jamstack-todo-ubaid.netlify.app/.netlify/functions/graphql"
+  uri: "https://jamstack-todo-ubaid.netlify.app/.netlify/functions/graphql",
+  fetch,
 });
 const client = new ApolloClient({
   cache: new InMemoryCache(),
-  link: authLink.concat(httpLink)
+  link: authLink.concat(httpLink),
 });
 
-console.log(`authLink.concat(httpLink): `, authLink.concat(httpLink))
+console.log(`authLink.concat(httpLink): `, authLink.concat(httpLink));
 
 const newTheme = {
   ...dark,

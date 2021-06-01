@@ -71,7 +71,6 @@ const Dashboard = () => {
   
   const inputRef = useRef();
 
-  
   // R E T U R N
   return (
     <Container>
@@ -126,6 +125,7 @@ const Dashboard = () => {
                 as="li"
                 key={todo.id}
                 onClick={async () => {
+                  console.log("Update Todo Invoked");
                   await updateTodoDone({ variables: { id: todo.id } });
                   await refetch();
                 }}

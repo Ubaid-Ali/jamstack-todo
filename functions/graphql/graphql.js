@@ -1,4 +1,5 @@
 const { ApolloServer, gql } = require("apollo-server-lambda");
+const { disableExperimentalFragmentVariables } = require("graphql-tag");
 
 // Construct a schema, using GraphQL schema language
 const typeDefs = gql`
@@ -24,8 +25,12 @@ let todoIndex = 0;
 // Provide resolver functions for your schema fields
 const resolvers = {
   Query: {
-    todos: () => {
-      return Object.values(todos);
+    todos: (parent, args, { user }) => {
+      if (!user) {
+        return [];
+      } else {
+        return Object.values(todos);
+      }
     },
   },
   Mutation: {
@@ -45,6 +50,13 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  context: ({ context }) => {
+    if (context.clientContext.user) {
+      return { user: context.clientContext.user.sub };
+    } else {
+      return {};
+    }
+  },
   playground: true,
   introspection: true,
 });

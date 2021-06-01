@@ -16,6 +16,7 @@
   "dependencies": {
     "@apollo/client": "^3.3.19",
     "@theme-ui/presets": "^0.9.1",
+    "apollo-link-context": "^1.0.20",
     "apollo-server-lambda": "^2.25.0",
     "gatsby": "^3.6.1",
     "gatsby-plugin-create-client-paths": "^3.6.0",

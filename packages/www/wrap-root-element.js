@@ -27,12 +27,14 @@ const authLink = setContext((_, { headers }) => {
 });
 
 const httpLink = new HttpLink({
-  uri: "https://jamstack-todo-ubaid.netlify.app/.netlify/functions/graphql",
+  // uri: "https://jamstack-todo-ubaid.netlify.app/.netlify/functions/graphql",
+  uri: "/.netlify/functions/graphql",
   fetch,
 });
 const client = new ApolloClient({
-  cache: new InMemoryCache(),
   link: authLink.concat(httpLink),
+  cache: new InMemoryCache(),
+  // link: "/.netlify/functions/graphql"
 });
 
 console.log(`authLink.concat(httpLink): `, authLink.concat(httpLink));

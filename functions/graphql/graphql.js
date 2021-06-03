@@ -1,4 +1,8 @@
+require("dotenv").config();
 const { ApolloServer, gql } = require("apollo-server-lambda");
+const faunadb = require("faunadb"),
+  q = faunadb.query;
+const client = new faunadb.Client({ secret: process.env.FAUNADB_SECRET });
 
 // Construct a schema, using GraphQL schema language
 const typeDefs = gql`
@@ -21,26 +25,47 @@ let todoIndex = 0;
 // Provide resolver functions for your schema fields
 const resolvers = {
   Query: {
-    todos: (parent, args, { user }) => {
+    todos: async (parent, args, { user }) => {
       if (!user) {
         return [];
       } else {
-        return Object.values(todos);
+        const result = await client.query(
+          q.Paginate(q.Match(q.Index("todos_by_user"), user))
+        );
+        return result.map(([ref, text, done]) => ({
+          id: ref.id,
+          text,
+          done,
+        }));
       }
-    }
+    },
   },
   Mutation: {
-    addTodo: (_, { text }) => {
-      todoIndex++;
-      const id = `key-${todoIndex}`;
-      todos[id] = { id, text, done: false };
-      return todos[id];
+    // A D D
+    addTodo: async (_, { text }) => {
+      if (!user) {
+        throw new Error("Must be authenticated to insert todos!");
+      }
+      const result = await client.query(
+        q.Create(q.Collection("todos"), {
+          data: { text, done: false, owner: user },
+        })
+      );
+      return { ...result.data, id: result.ref.id };
     },
-    updateTodoDone: (_, { id }) => {
-      todos[id].done = true;
-      return todos[id];
-    }
-  }
+    // U P D A T E
+    updateTodoDone: async (_, { id }) => {
+      if (!user) {
+        throw new Error("Must be authenticated to update todos!");
+      }
+      const result = await client.query(
+        q.Update(q.Ref(q.Collection("todos"), id), {
+          data: { done: true },
+        })
+      );
+      return { ...result.data, id: result.ref.id };
+    },
+  },
 };
 
 const server = new ApolloServer({
@@ -59,12 +84,12 @@ const server = new ApolloServer({
   // If you'd like to have GraphQL Playground and introspection enabled in production,
   // the `playground` and `introspection` options must be set explicitly to `true`.
   playground: true,
-  introspection: true
+  introspection: true,
 });
 
 exports.handler = server.createHandler({
   cors: {
     origin: "*",
-    credentials: true
-  }
+    credentials: true,
+  },
 });

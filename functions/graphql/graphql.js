@@ -32,7 +32,7 @@ const resolvers = {
         const result = await client.query(
           q.Paginate(q.Match(q.Index("todos_by_user"), user))
         );
-        return result.map(([ref, text, done]) => ({
+        return results.data.map(([ref, text, done]) => ({
           id: ref.id,
           text,
           done,

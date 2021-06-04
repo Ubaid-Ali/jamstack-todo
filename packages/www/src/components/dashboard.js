@@ -114,7 +114,7 @@ const Dashboard = () => {
       {/* T O D O   L I S T */}
       <Flex sx={{ flexDirection: "column" }}>
         {loading ? <div>Loading...</div> : null} {/* Loading */}
-        {error ? <div>{error.message}</div> : null} {/* Error */}
+        {error ? <div> ERROR :( {error.message}</div> : null} {/* Error */}
         {!loading && !error ? (
           <ul sx={{ listStyleType: "none" }}>
             {data.todos.map((todo) => (

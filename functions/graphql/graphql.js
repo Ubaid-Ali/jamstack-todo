@@ -20,15 +20,17 @@ const typeDefs = gql`
   }
 `;
 
-const todos = {};
-let todoIndex = 0;
 // Provide resolver functions for your schema fields
 const resolvers = {
+  // G E T - T O D O S
   Query: {
     todos: async (parent, args, { user }) => {
+      // console.log(`user from client side: `, user); done
       if (!user) {
+        console.log(`USER NOT FOUND`, user);
         return [];
       } else {
+        console.log(`Get Request Invoked, Data from Faunadb ,`, user);
         const result = await client.query(
           q.Paginate(q.Match(q.Index("todos_by_user"), user))
         );
@@ -42,10 +44,11 @@ const resolvers = {
   },
   Mutation: {
     // A D D
-    addTodo: async (_, { text }) => {
+    addTodo: async (_, { text }, { user }) => {
       if (!user) {
         throw new Error("Must be authenticated to insert todos!");
       }
+      console.log(`user is going to add todo`);
       const result = await client.query(
         q.Create(q.Collection("todos"), {
           data: { text, done: false, owner: user },
@@ -54,10 +57,11 @@ const resolvers = {
       return { ...result.data, id: result.ref.id };
     },
     // U P D A T E
-    updateTodoDone: async (_, { id }) => {
+    updateTodoDone: async (_, { id }, { user }) => {
       if (!user) {
         throw new Error("Must be authenticated to update todos!");
       }
+      console.log(`Todo is going to update`);
       const result = await client.query(
         q.Update(q.Ref(q.Collection("todos"), id), {
           data: { done: true },

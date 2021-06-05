@@ -1,4 +1,16 @@
+
+
+
+
+
+
+
+
+
 node_modules
 public
 .cache
 /netlify.toml
+.cache
+.env
+public
